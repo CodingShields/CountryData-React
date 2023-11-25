@@ -7,11 +7,9 @@ function App() {
 	const [selectedCountries, setSelectedCountries] = useState([]);
 	const [state, setState] = useState({
 		loading: false,
-		loadingModal: false,
 		error: false,
 		errorMessage: "",
 		resetBtn: false,
-		reset: false,
 	});
 
 	const initialState = () => {
@@ -20,17 +18,15 @@ function App() {
 		setSelectedCountries([]);
 		setState({
 			loading: false,
-			loadingModal: false,
 			error: false,
 			errorMessage: "",
 			resetBtn: false,
-			reset: false,
 		});
 	};
 
 	useEffect(() => {
 		initialState();
-		setState({ loading: true });
+		setState({ ...state, loading: true });
 		const fetchCountries = async () => {
 			const response = await fetch("https://restcountries.com/v3.1/all?fields=name,flags,cca3");
 			const data = await response.json();
@@ -38,36 +34,27 @@ function App() {
 				throw new Error("");
 			} else {
 				const randomCountries = data.sort(() => Math.random() - Math.random()).slice(0, 4);
-				// const randomCountryName = randomCountries.map((country) => country.name.common);
-				// const randomCountryFlag = randomCountries.map((country) => country.flags.png);
-				// const randomCountryCode = randomCountries.map((country) => country.cca3);
-				console.log(randomCountries, "random Countries");
-				{
-					randomCountries.map((country) => {
-						setCountries((prevCountries) => [
-							...prevCountries,
-							{
-								id: nanoid(),
-								name: country.name.common,
-								flag: country.flags.png,
-								countryCode: country.cca3,
-							},
-						]);
-					});
-				}
+				setCountries(
+					randomCountries.map((item) => ({
+						id: nanoid(),
+						name: item.name.common,
+						flag: item.flags.png,
+						countryCode: item.cca3,
+					}))
+				);
 			}
 		};
 		fetchCountries();
-		setState({ loading: false });
+		setState({ ...state, loading: false });
 	}, [state.reset]);
 
-	console.log(countries, "countries");
 	const handleCountrySelect = (e) => {
 		const selectedCountry = e.target.value;
 		const countryCode = countries.filter((item) => item.name === selectedCountry).map((item) => item.countryCode);
-		const countryName = countries.map((item) => item.name);
-		const selectedCountryFlag = countries.map((item) => item.flag);
-		console.log(countryCode, "countryCode");
+		const selectedCountryFlag = countries.filter((item) => item.name === selectedCountry).map((item) => item.flag);
+		const countryName = countries.filter((item) => item.name === selectedCountry).map((item) => item.name);
+		const countrySelected = selectedCountries.map((item) => item.name).includes(countryName[0]);
+
 		const fetchGdp = async () => {
 			const apiUrl = `https://api.worldbank.org/v2/country/${countryCode}/indicator/NY.GDP.MKTP.CD?format=json`;
 			const response = await fetch(apiUrl);
@@ -85,23 +72,48 @@ function App() {
 						style: "currency",
 						currency: "USD",
 					}).format(gdpData);
-					if (countryName === selectedCountry) {
+					if (countrySelected === true) {
 						setState({ error: true, errorMessage: "Error: Country already selected" });
-					} else if (selectedCountries.length > 4) {
-						setState({ error: true, errorMessage: "Error: You can only select 4 countries", resetBtn: true });
+						setTimeout(() => {
+							setState({ error: false, errorMessage: "" });
+						}, 3000);
+					} else if (gdpData === null) {
+						setState({ error: true, errorMessage: "Error: Country GDP not found" });
+						setSelectedCountries((prevSelectedCountries) => [
+							...prevSelectedCountries,
+							{
+								name: selectedCountry,
+								flag: selectedCountryFlag,
+								gdp: "GDP Data Not Found",
+								selected: true,
+							},
+						]);
+						setTimeout(() => {
+							setState({ error: false, errorMessage: "" });
+						}, 3000);
 					} else {
 						setSelectedCountries((prevSelectedCountries) => [
 							...prevSelectedCountries,
 							{
-								// countryCode: countryCode,
-								// name: selectedCountry,
-								// flag: selectedCountryFlag,
+								name: selectedCountry,
+								flag: selectedCountryFlag,
 								gdp: formatCurrency,
+								selected: true,
 							},
 						]);
 					}
 				} catch (error) {
 					setState({ error: true, errorMessage: "Error: Country GDP not found" });
+					setSelectedCountries((prevSelectedCountries) => [
+						...prevSelectedCountries,
+						{
+							name: selectedCountry,
+							flag: selectedCountryFlag,
+							gdp: "GDP Data Not Found",
+							selected: true,
+						},
+					]);
+
 					setTimeout(() => {
 						setState({ error: false, errorMessage: "" });
 					}, 3000);
@@ -113,12 +125,12 @@ function App() {
 	};
 
 	const handleReset = () => {
-		setState({ reset: true });
+		initialState();
 	};
 
 	return (
 		<div className='country-container-main'>
-			<h1> Country Interview Test</h1>
+			<h1> Country Data Interview Test</h1>
 			<div className='country-container'>
 				<select onChange={handleCountrySelect} value={selectedCountry} className='country-list'>
 					<option value=''>Please select one</option>
@@ -156,7 +168,7 @@ function App() {
 					);
 				})}
 			</div>
-			{state.reset ? (
+			{selectedCountries.length === 4 ? (
 				<button className='reset-btn' onClick={handleReset}>
 					Reset Countries
 				</button>
