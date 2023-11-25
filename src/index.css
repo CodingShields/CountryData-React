@@ -1,0 +1,121 @@
+body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.country-container-main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 600px;
+	max-width: auto;
+	border: 1px solid black;
+	border-radius: 10px;
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+	padding: 20px;
+	margin: 20px;
+}
+
+.country-container-main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.country-list {
+	width: 100%;
+	height: 70px;
+	font-size: 26px;
+	border-radius: 5px;
+	margin: 0px;
+	padding: 10px;
+}
+
+.country-option {
+	width: 400px;
+	height: 50px;
+	font-size: 26px;
+	margin: 0px;
+	padding: 0px;
+}
+.selected-country-container {
+	display: flex;
+	flex-direction: row;
+}
+.selected-country-container-list {
+	display: flex;
+	flex-direction: row;
+}
+.country-info-container {
+	background-color: lightgray;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	min-width: 400px;
+	max-width: auto;
+	height: 70px;
+	border: 1px solid black;
+	border-radius: 5px;
+	margin: 10px;
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+}
+
+.country-flag-img {
+	width: 50px;
+	height: 25px;
+	margin: 5px;
+	padding: 10px;
+}
+
+.country-name {
+	font-size: 22px;
+	margin-left: 10px;
+	margin: 0px;
+	padding: 5px;
+}
+.country-text {
+	font-size: 18px;
+	margin-left: 10px;
+	margin: 0px;
+	padding-right: 20px;
+}
+.error-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+	z-index: 9999; /* Ensure the modal appears on top */
+}
+
+.error-content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	background-color: white;
+	padding: 20px;
+	border-radius: 5px;
+	width: 400px;
+	height: 200px;
+	box-shadow: #333 1px 3px 5px 3px;
+	border: 2px solid black;
+	margin: 0px;
+	padding: 0px;
+	position: relative;
+}
+.error-message {
+	text-align: center;
+	font-size: 30px;
+	color: #000;
+	position: relative;
+}
