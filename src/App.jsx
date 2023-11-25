@@ -10,6 +10,8 @@ function App() {
 		loadingModal: false,
 		error: false,
 		errorMessage: "",
+		resetBtn: false,
+		reset: false,
 	});
 
 	const initialState = () => {
@@ -21,6 +23,8 @@ function App() {
 			loadingModal: false,
 			error: false,
 			errorMessage: "",
+			resetBtn: false,
+			reset: false,
 		});
 	};
 
@@ -34,51 +38,82 @@ function App() {
 				throw new Error("");
 			} else {
 				const randomCountries = data.sort(() => Math.random() - Math.random()).slice(0, 4);
-				setCountries(randomCountries);
+				// const randomCountryName = randomCountries.map((country) => country.name.common);
+				// const randomCountryFlag = randomCountries.map((country) => country.flags.png);
+				// const randomCountryCode = randomCountries.map((country) => country.cca3);
+				console.log(randomCountries, "random Countries");
+				{
+					randomCountries.map((country) => {
+						setCountries((prevCountries) => [
+							...prevCountries,
+							{
+								id: nanoid(),
+								name: country.name.common,
+								flag: country.flags.png,
+								countryCode: country.cca3,
+							},
+						]);
+					});
+				}
 			}
 		};
 		fetchCountries();
 		setState({ loading: false });
-	}, []);
+	}, [state.reset]);
 
+	console.log(countries, "countries");
 	const handleCountrySelect = (e) => {
 		const selectedCountry = e.target.value;
-		const selectedCountryId = e.target.selectedIndex;
-		const selectedCountryFlag = countries.find((country) => country.name.common === selectedCountry).flags.png;
-		const countryCode = countries.find((country) => country.name.common === selectedCountry).cca3;
+		const countryCode = countries.filter((item) => item.name === selectedCountry).map((item) => item.countryCode);
+		const countryName = countries.map((item) => item.name);
+		const selectedCountryFlag = countries.map((item) => item.flag);
+		console.log(countryCode, "countryCode");
 		const fetchGdp = async () => {
 			const apiUrl = `https://api.worldbank.org/v2/country/${countryCode}/indicator/NY.GDP.MKTP.CD?format=json`;
 			const response = await fetch(apiUrl);
 			if (!response.ok) {
 				setState({ error: true, errorMessage: "Error: Country GDP not found" });
-			} else if (response.ok) {
-				const data = await response.json();
-				const gdpData = data[1][0]["value"];
-				const formatCurrency = new Intl.NumberFormat("en-US", {
-					style: "currency",
-					currency: "USD",
-				}).format(gdpData);
-				if (selectedCountryId === countryId) {
-					setState({ error: true, errorMessage: "Error: Country already selected" });
-				} else if (selectedCountries.length === 4) {
-					setState({ error: true, errorMessage: "Error: You can only select 4 countries" });
-				} else {
-					setSelectedCountries((prevSelectedCountries) => [
-						...prevSelectedCountries,
-						{
-							id: countryId,
-							countryCode: countryCode,
-							name: selectedCountry,
-							flag: selectedCountryFlag,
-							gdp: formatCurrency,
-							selected: true,
-						},
-					]);
+				setTimeout(() => {
+					setState({ error: false, errorMessage: "" });
+				}, 3000);
+			} else {
+				try {
+					const data = await response.json();
+					console.log(data, "data");
+					const gdpData = data[1][0]["value"];
+					const formatCurrency = new Intl.NumberFormat("en-US", {
+						style: "currency",
+						currency: "USD",
+					}).format(gdpData);
+					if (countryName === selectedCountry) {
+						setState({ error: true, errorMessage: "Error: Country already selected" });
+					} else if (selectedCountries.length > 4) {
+						setState({ error: true, errorMessage: "Error: You can only select 4 countries", resetBtn: true });
+					} else {
+						setSelectedCountries((prevSelectedCountries) => [
+							...prevSelectedCountries,
+							{
+								// countryCode: countryCode,
+								// name: selectedCountry,
+								// flag: selectedCountryFlag,
+								gdp: formatCurrency,
+							},
+						]);
+					}
+				} catch (error) {
+					setState({ error: true, errorMessage: "Error: Country GDP not found" });
+					setTimeout(() => {
+						setState({ error: false, errorMessage: "" });
+					}, 3000);
 				}
 			}
 		};
 		fetchGdp();
 		setState({ ...state, renderSelection: true });
+	};
+
+	const handleReset = () => {
+		setState({ reset: true });
 	};
 
 	return (
@@ -90,8 +125,8 @@ function App() {
 					{state.loading ? <p>Loading...</p> : ""}
 					{countries.map((country) => {
 						return (
-							<option key={country.id} value={country.name.common} className='country-option'>
-								{country.name.common}
+							<option key={country.id} value={country.name} className='country-option'>
+								{country.name}
 							</option>
 						);
 					})}
@@ -121,6 +156,13 @@ function App() {
 					);
 				})}
 			</div>
+			{state.reset ? (
+				<button className='reset-btn' onClick={handleReset}>
+					Reset Countries
+				</button>
+			) : (
+				""
+			)}
 		</div>
 	);
 }
